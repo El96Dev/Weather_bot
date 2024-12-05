@@ -1,3 +1,22 @@
+weather_translate = {
+    "Thunderstorm": "Гроза",
+    "Drizzle": "Мелкий дождь",
+    "Rain": "Дождь",
+    "Snow": "Снег",
+    "Clear": "Ясно",
+    "Clouds": "Облачно",
+}
+
+weather_emoji = {
+    "Thunderstorm": "🌩️",
+    "Drizzle": "🌧️",
+    "Rain": "🌧️",
+    "Snow": "❄️",
+    "Clear": "🌞",
+    "Clouds": "🌥️",
+}
+
+
 def get_coordinates_from_city_button(cities: dict, button_city: str, button_country: str, button_state: str) -> dict | None:
     coordinates = dict()
     for city in cities:
@@ -9,7 +28,16 @@ def get_coordinates_from_city_button(cities: dict, button_city: str, button_coun
 
 def create_current_weather_report(response: dict) -> str:
     report = ""
-    report += response['weather'][0]['main'] + "\n"
+    if response['weather'][0]['main'] in weather_translate.keys():
+        report += weather_translate[response['weather'][0]['main']]
+    else: 
+        report += response['weather'][0]['main']
+
+    if response['weather'][0]['main'] in weather_emoji.keys():
+        report += " " + weather_emoji[response['weather'][0]['main']] + "\n"
+    else:
+        report += "\n"
+
     report += response['weather'][0]['description'] + "\n"
     report += "Температура: " + str(round(response['main']['temp'] - 273.15, 2)) + "\n"
     report += "Ощущается как: " + str(round(response['main']['feels_like'] - 273.15, 2)) + "\n"
@@ -47,7 +75,16 @@ def create_weather_forecast(response: dict) -> list[str]:
             report += current_date + "\n"
 
         report += forecast['dt_txt'][11:16] + "\n"
-        report += forecast['weather'][0]['main'] + "\n"
+        if forecast['weather'][0]['main'] in weather_translate.keys():
+            report += weather_translate[forecast['weather'][0]['main']]
+        else: 
+            report += forecast['weather'][0]['main']
+
+        if forecast['weather'][0]['main'] in weather_emoji.keys():
+            report += " " + weather_emoji[forecast['weather'][0]['main']] + "\n"
+        else:
+            report += "\n"
+
         report += forecast['weather'][0]['description'] + "\n"
         report += "Температура: " + str(round(forecast['main']['temp'] - 273.15, 2)) + "\n"
         report += "Ощущается как: " + str(round(forecast['main']['feels_like'] - 273.15, 2)) + "\n"
