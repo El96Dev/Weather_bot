@@ -26,6 +26,9 @@ class DatabaseHelper:
             scopefunc=current_task
         )
         return session
+    
+    def get_url(self) -> str:
+        return self.url
 
 
 db_helper = DatabaseHelper(

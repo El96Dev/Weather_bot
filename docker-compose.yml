@@ -12,7 +12,8 @@ services:
       - DB_HOST=pgdb
       - DB_PORT=5432
     command: >
-      sh -c "python3 main.py"
+      sh -c "alembic upgrade head
+             python3 main.py"
     depends_on:
       pgdb:
         condition: service_healthy

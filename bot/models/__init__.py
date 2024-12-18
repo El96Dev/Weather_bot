@@ -4,5 +4,5 @@ __all__ = (
     "WeatherNotifications"
 )
 
-from base import Base
-from weather_notifications import WeatherNotifications, NotificationsType
+from .base import Base
+from .weather_notifications import WeatherNotifications, NotificationsType
