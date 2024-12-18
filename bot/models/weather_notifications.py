@@ -16,7 +16,7 @@ class WeatherNotifications(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     chat_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    report_type: Mapped[NotificationsType] = mapped_column(SqlAlchemyEnum(NotificationsType))
+    notifications_type: Mapped[NotificationsType] = mapped_column(SqlAlchemyEnum(NotificationsType))
     latitude: Mapped[float] = mapped_column(Float, nullable=False)
     longitude: Mapped[float] = mapped_column(Float, nullable=False)
     report_time: Mapped[time] = mapped_column(Time(timezone=True), nullable=False)

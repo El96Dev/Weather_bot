@@ -1,15 +1,23 @@
 import os
-import asyncio
 import logging
+
+import asyncio
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import CommandStart, StateFilter, Command
 
-from keyboards import reply
-from utils import *
 import api_requests
+from new_notifications import router as new_notifications_router
+from users_notifications import router as users_notifications_router
+from keyboards import reply
+from utils import (
+    get_coordinates_from_city_button, 
+    create_air_polution_report,
+    create_current_weather_report,
+    create_weather_forecast,
+)
 
 
 load_dotenv()
@@ -18,15 +26,8 @@ TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
 
 bot = Bot(TELEGRAM_TOKEN)
 dp = Dispatcher()
-
-class SetReportState(StatesGroup):
-    set_notification_type = State()
-    set_time = State()
-    set_location_type = State()
-    set_city = State()
-    set_latituge = State()
-    set_longitude = State()
-
+dp.include_router(new_notifications_router)
+dp.include_router(users_notifications_router)
 
 class SetLocation(StatesGroup):
     set_location_type = State()
@@ -49,7 +50,7 @@ async def get_current_weather(message: types.Message, state: FSMContext):
 
 
 @dp.message(F.text == "Название города", StateFilter(SetLocation.set_location_type))
-async def choose_location_type(message: types.Message, state: FSMContext):
+async def choose_city_location_type(message: types.Message, state: FSMContext):
     await message.answer("Укажите название города с большой буквы:", reply_markup=reply.remove_keyboard)
     await state.set_state(SetLocation.set_city)
 
@@ -92,9 +93,8 @@ async def click_city_button(message: types.Message, state: FSMContext):
     await state.clear()
 
 
-
 @dp.message(F.text == "Широта и долгота", StateFilter(SetLocation.set_location_type))
-async def choose_location_type(message: types.Message, state: FSMContext):
+async def choose_coordinates_location_type(message: types.Message, state: FSMContext):
     await message.answer("Укажите широту:", reply_markup=reply.remove_keyboard)
     await state.set_state(SetLocation.set_latitude)
 
@@ -138,20 +138,9 @@ async def get_forecast_weather(message: types.Message, state: FSMContext):
 
 @dp.message(F.text == "Загрязнение воздуха")
 async def get_air_polution(message: types.Message, state: FSMContext):
-    print("air polution 555")
     await message.answer("Выберите способ указания геолокации:", reply_markup=reply.location_type_keyboard.as_markup())
     await state.update_data(action="air_polution")
     await state.set_state(SetLocation.set_location_type)
-
-
-@dp.message(F.text == "Добавить оповещения")
-async def add_notifications(message: types.Message, state: FSMContext):
-    pass
-
-
-@dp.message(F.text == "Мои оповещения")
-async def my_notifications(message: types.Message, state: FSMContext):
-    pass
 
 
 async def main():
