@@ -19,4 +19,4 @@ class WeatherNotifications(Base):
     notifications_type: Mapped[NotificationsType] = mapped_column(SqlAlchemyEnum(NotificationsType))
     latitude: Mapped[float] = mapped_column(Float, nullable=False)
     longitude: Mapped[float] = mapped_column(Float, nullable=False)
-    report_time: Mapped[time] = mapped_column(Time(timezone=True), nullable=False)
+    notifications_time: Mapped[time] = mapped_column(Time(timezone=True), nullable=False)
