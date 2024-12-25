@@ -1,8 +1,8 @@
 """Created weather_notifications table
 
-Revision ID: f589daf303ec
+Revision ID: fd01e77fb98e
 Revises: 
-Create Date: 2024-12-19 11:31:49.202678
+Create Date: 2024-12-23 09:32:03.136577
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'f589daf303ec'
+revision: str = 'fd01e77fb98e'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,9 +24,11 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('chat_id', sa.BigInteger(), nullable=False),
     sa.Column('notifications_type', sa.Enum('CURRENT', 'FORECAST', name='notificationstype'), nullable=False),
+    sa.Column('city', sa.String(), nullable=False),
     sa.Column('latitude', sa.Float(), nullable=False),
     sa.Column('longitude', sa.Float(), nullable=False),
-    sa.Column('notifications_time', sa.Time(timezone=True), nullable=False),
+    sa.Column('utc', sa.String(), nullable=False),
+    sa.Column('notifications_time', sa.Time(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###

@@ -1,10 +1,15 @@
-import os 
+import os
 from dotenv import load_dotenv
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, async_scoped_session
+from sqlalchemy.ext.asyncio import (
+    create_async_engine,
+    async_sessionmaker,
+    async_scoped_session,
+)
 from asyncio import current_task
 
 
 load_dotenv()
+
 
 class DatabaseHelper:
     def __init__(self, url: str, echo: bool=False):
@@ -14,9 +19,9 @@ class DatabaseHelper:
             echo=echo
         )
         self.session_factory = async_sessionmaker(
-            bind=self.url,
-            autoflush=False, 
-            autocommit=False, 
+            bind=self.engine,
+            autoflush=False,
+            autocommit=False,
             expire_on_commit=False
         )
 
@@ -26,12 +31,13 @@ class DatabaseHelper:
             scopefunc=current_task
         )
         return session
-    
+
     def get_url(self) -> str:
         return self.url
 
 
 db_helper = DatabaseHelper(
-    url = "postgresql+asyncpg://" + os.getenv("DB_USER") + ":" + os.getenv("DB_PASSWORD") + "@" + \
-          os.getenv("DB_HOST") + ":" + os.getenv("DB_PORT") + "/" + os.getenv("DB_NAME")
+    url="postgresql+asyncpg://" + os.getenv("DB_USER") + ":" \
+    + os.getenv("DB_PASSWORD") + "@" + os.getenv("DB_HOST") \
+    + ":" + os.getenv("DB_PORT") + "/" + os.getenv("DB_NAME")
 )

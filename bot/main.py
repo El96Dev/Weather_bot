@@ -13,7 +13,7 @@ from new_notifications import router as new_notifications_router
 from users_notifications import router as users_notifications_router
 from keyboards import reply
 from utils import (
-    get_coordinates_from_city_button, 
+    get_coordinates_from_city_button,
     create_air_polution_report,
     create_current_weather_report,
     create_weather_forecast,
@@ -29,6 +29,7 @@ dp = Dispatcher()
 dp.include_router(new_notifications_router)
 dp.include_router(users_notifications_router)
 
+
 class SetLocation(StatesGroup):
     set_location_type = State()
     set_city = State()
@@ -42,16 +43,21 @@ async def start(message: types.Message, state: FSMContext):
     await message.answer("Добро пожаловать в Weather_bot!", reply_markup=reply.start_keyboard.as_markup())
 
 
-@dp.message(F.text == "Текущая погода")
+@dp.message(F.text == "Текущая погода", StateFilter(None))
 async def get_current_weather(message: types.Message, state: FSMContext):
-    await message.answer("Выберите способ указания геолокации:", reply_markup=reply.location_type_keyboard.as_markup())
+    await message.answer(
+        "Выберите способ указания геолокации:",
+        reply_markup=reply.location_type_keyboard.as_markup(),
+    )
     await state.update_data(action="current_weather")
     await state.set_state(SetLocation.set_location_type)
 
 
 @dp.message(F.text == "Название города", StateFilter(SetLocation.set_location_type))
 async def choose_city_location_type(message: types.Message, state: FSMContext):
-    await message.answer("Укажите название города с большой буквы:", reply_markup=reply.remove_keyboard)
+    await message.answer(
+        "Укажите название города с большой буквы:", reply_markup=reply.remove_keyboard
+    )
     await state.set_state(SetLocation.set_city)
 
 
@@ -67,25 +73,33 @@ async def set_city(message: types.Message, state: FSMContext):
 
 @dp.message(F.text, StateFilter(SetLocation.click_city_button))
 async def click_city_button(message: types.Message, state: FSMContext):
-    button_city, button_country, button_state = message.text.split(', ')
+    button_city, button_country, button_state = message.text.split(", ")
     data = await state.get_data()
     cities = data.get("cities")
-    coordinates = get_coordinates_from_city_button(cities, button_city, button_country, button_state)
+    coordinates = get_coordinates_from_city_button(
+        cities, button_city, button_country, button_state
+    )
     if coordinates is not None:
-        latitude = coordinates['latitude']
-        longitude = coordinates['longitude']
+        latitude = coordinates["latitude"]
+        longitude = coordinates["longitude"]
         action = data.get("action")
         if action == "current_weather":
-            response = api_requests.get_current_weather(latitude=latitude, longitude=longitude)
+            response = api_requests.get_current_weather(
+                latitude=latitude, longitude=longitude
+            )
             report = create_current_weather_report(response.json())
             await message.answer(report, reply_markup=reply.remove_keyboard)
         elif action == "weather_forecast":
-            response = api_requests.get_weather_forecast(latitude=latitude, longitude=longitude)
+            response = api_requests.get_weather_forecast(
+                latitude=latitude, longitude=longitude
+            )
             report_list = create_weather_forecast(response.json())
             for report in report_list:
                 await message.answer(report, reply_markup=reply.remove_keyboard)
         elif action == "air_polution":
-            response = api_requests.get_air_polution(latitude=latitude, longitude=longitude)
+            response = api_requests.get_air_polution(
+                latitude=latitude, longitude=longitude
+            )
             report = create_air_polution_report(response.json())
             await message.answer(report, reply_markup=reply.remove_keyboard)
     else:
@@ -114,11 +128,15 @@ async def set_longitude(message: types.Message, state: FSMContext):
     latitude = data.get("latitude")
     longitude = data.get("longitude")
     if action == "current_weather":
-        response = api_requests.get_current_weather(latitude=latitude, longitude=longitude)
+        response = api_requests.get_current_weather(
+            latitude=latitude, longitude=longitude
+        )
         report = create_current_weather_report(response.json())
         await message.answer(report, reply_markup=reply.remove_keyboard)
     elif action == "weather_forecast":
-        response = api_requests.get_weather_forecast(latitude=latitude, longitude=longitude)
+        response = api_requests.get_weather_forecast(
+            latitude=latitude, longitude=longitude
+        )
         report_list = create_weather_forecast(response.json())
         for report in report_list:
             await message.answer(report, reply_markup=reply.remove_keyboard)
@@ -129,16 +147,22 @@ async def set_longitude(message: types.Message, state: FSMContext):
     await state.clear()
 
 
-@dp.message(F.text == "Прогноз погоды")
+@dp.message(F.text == "Прогноз погоды", StateFilter(None))
 async def get_forecast_weather(message: types.Message, state: FSMContext):
-    await message.answer("Выберите способ указания геолокации:", reply_markup=reply.location_type_keyboard.as_markup())
+    await message.answer(
+        "Выберите способ указания геолокации:",
+        reply_markup=reply.location_type_keyboard.as_markup(),
+    )
     await state.update_data(action="weather_forecast")
     await state.set_state(SetLocation.set_location_type)
 
 
 @dp.message(F.text == "Загрязнение воздуха")
 async def get_air_polution(message: types.Message, state: FSMContext):
-    await message.answer("Выберите способ указания геолокации:", reply_markup=reply.location_type_keyboard.as_markup())
+    await message.answer(
+        "Выберите способ указания геолокации:",
+        reply_markup=reply.location_type_keyboard.as_markup()
+    )
     await state.update_data(action="air_polution")
     await state.set_state(SetLocation.set_location_type)
 
