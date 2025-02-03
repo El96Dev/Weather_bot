@@ -3,7 +3,7 @@ from datetime import time
 from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models import WeatherNotifications, NotificationsType
+from models import WeatherNotifications, NotificationsType, NotificationsTime
 
 
 class NotificationsLimitError(Exception):
@@ -16,8 +16,7 @@ async def add_weather_notifictions(
     city: str,
     latitiude: float,
     longitude: float,
-    utc: str,
-    notifications_time: time,
+    notifications_time: NotificationsTime,
     session: AsyncSession,
 ) -> None:
     notifications_count = await count_user_weather_notifications(chat_id, type, session)
@@ -29,7 +28,6 @@ async def add_weather_notifictions(
             city=city,
             latitude=latitiude,
             longitude=longitude,
-            utc=utc,
             notifications_time=notifications_time,
         )
         session.add(notifications)
@@ -44,6 +42,16 @@ async def get_weather_notifications(
     chat_id: int, session: AsyncSession
 ) -> list[WeatherNotifications]:
     stmt = select(WeatherNotifications).where(WeatherNotifications.chat_id == chat_id)
+    result = await session.execute(stmt)
+    notifications = result.scalars().all()
+    return notifications
+
+
+async def get_weather_notifications_by_time(
+        session: AsyncSession, 
+        notifications_time: NotificationsTime
+    ) -> list[WeatherNotifications]:
+    stmt = select(WeatherNotifications).where(WeatherNotifications.notifications_time==notifications_time)
     result = await session.execute(stmt)
     notifications = result.scalars().all()
     return notifications

@@ -11,6 +11,12 @@ class NotificationsType(Enum):
     FORECAST = "FORECAST"
 
 
+class NotificationsTime(Enum):
+    MORNING = "MORNING"
+    DAY = "DAY"
+    EVENING = "EVENING"
+
+
 class WeatherNotifications(Base):
     __tablename__ = "weather_notifications"
 
@@ -22,5 +28,6 @@ class WeatherNotifications(Base):
     city: Mapped[str] = mapped_column(String, nullable=False)
     latitude: Mapped[float] = mapped_column(Float, nullable=False)
     longitude: Mapped[float] = mapped_column(Float, nullable=False)
-    utc: Mapped[str] = mapped_column(String, nullable=False)
-    notifications_time: Mapped[time] = mapped_column(Time, nullable=False)
+    notifications_time: Mapped[NotificationsTime] = mapped_column(
+        SqlAlchemyEnum(NotificationsTime)
+    )

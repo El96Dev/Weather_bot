@@ -11,12 +11,103 @@ services:
       - DB_NAME=weather_bot
       - DB_HOST=pgdb
       - DB_PORT=5432
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+      - TZ=Europe/Moscow 
     command: >
       sh -c "alembic upgrade head
              python3 main.py"
     depends_on:
       pgdb:
         condition: service_healthy
+
+  celery_worker:
+    build: .
+    command: celery -A celery_app.celery worker -l INFO
+    volumes:
+      - ./bot:/bot
+    env_file:
+      - .env
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=weather_bot
+      - DB_HOST=pgdb
+      - DB_PORT=5432
+      - TZ=Europe/Moscow 
+    healthcheck:
+      test: ["CMD", "celery", "-A", "celery_app.celery", "inspect", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  celery_beat:
+    build: .
+    command: celery -A celery_app.celery beat -l INFO
+    volumes:
+      - ./bot:/bot
+    env_file:
+      - .env
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=weather_bot
+      - DB_HOST=pgdb
+      - DB_PORT=5432
+      - TZ=Europe/Moscow 
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A celery_app.celery status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  flower:
+    image: mher/flower:latest
+    volumes:
+      - ./bot:/bot
+    command: celery -A celery_app.celery --broker=redis://redis:6379/0 flower --loglevel=debug
+    ports:
+      - "5555:5555"
+    env_file:
+      - .env
+    environment:
+      - TZ=Europe/Moscow 
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=weather_bot
+      - DB_HOST=pgdb
+      - DB_PORT=5432
+    depends_on:
+      - redis
+      - celery_beat
+      - celery_worker
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6389:6379"
+    environment:
+      - TZ=Europe/Moscow 
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
 
   pgdb:
     image: postgres
@@ -25,11 +116,12 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_PORT=5432
+      - TZ=Europe/Moscow 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d weather_bot"]
       interval: 2s
       timeout: 2s
-      retries: 5
+      retries: 10
     volumes: 
       - pgdata:/var/lib/postgresql/data
 

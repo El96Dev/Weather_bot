@@ -18,8 +18,10 @@ click==8.1.7
 click-didyoumean==0.3.1
 click-plugins==1.1.1
 click-repl==0.3.0
+flower==2.0.1
 frozenlist==1.5.0
 greenlet==3.1.1
+humanize==4.11.0
 idna==3.10
 kombu==5.4.2
 magic-filter==1.0.12
@@ -30,6 +32,7 @@ mypy-extensions==1.0.0
 packaging==24.2
 pathspec==0.12.1
 platformdirs==4.3.6
+prometheus_client==0.21.1
 prompt_toolkit==3.0.48
 propcache==0.2.1
 pydantic==2.9.2
@@ -41,6 +44,7 @@ redis==5.2.0
 requests==2.32.3
 six==1.16.0
 SQLAlchemy==2.0.36
+tornado==6.4.2
 typing_extensions==4.12.2
 tzdata==2024.2
 urllib3==2.2.3

@@ -32,8 +32,9 @@ def get_coordinates_from_city_button(
             return coordinates
         
 
-def create_current_weather_report(response: dict) -> str:
+def create_current_weather_report(city: str, response: dict) -> str:
     report = ""
+    report += "Город: " + city + "\n"
     if response["weather"][0]["main"] in weather_translate.keys():
         report += weather_translate[response["weather"][0]["main"]]
     else:
@@ -57,8 +58,9 @@ def create_current_weather_report(response: dict) -> str:
     return report
 
 
-def create_air_polution_report(response: dict) -> str:
+def create_air_polution_report(city: str, response: dict) -> str:
     report = ""
+    report += "Город: " + city + "\n"
     report += (
         "Индекс качества воздуха: " + str(response["list"][0]["main"]["aqi"]) + "\n"
     )
@@ -99,7 +101,7 @@ def create_air_polution_report(response: dict) -> str:
     return report
 
 
-def create_weather_forecast(response: dict) -> list[str]:
+def create_weather_forecast(city: str, response: dict) -> list[str]:
     report_list = []
     forecasts = response["list"]
     current_date = ""
@@ -110,6 +112,7 @@ def create_weather_forecast(response: dict) -> list[str]:
                 report_list.append(report)
             report = ""
             current_date = forecast["dt_txt"][:10]
+            report += "Город: " + city + "\n"
             report += current_date + "\n"
 
         report += forecast["dt_txt"][11:16] + "\n"

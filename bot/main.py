@@ -40,14 +40,14 @@ class SetLocation(StatesGroup):
 
 @dp.message(CommandStart())
 async def start(message: types.Message, state: FSMContext):
-    await message.answer("Добро пожаловать в Weather_bot!", reply_markup=reply.start_keyboard.as_markup())
+    await message.answer("Добро пожаловать в Weather_bot!", reply_markup=reply.get_start_keyboard())
 
 
 @dp.message(F.text == "Текущая погода", StateFilter(None))
 async def get_current_weather(message: types.Message, state: FSMContext):
     await message.answer(
         "Выберите способ указания геолокации:",
-        reply_markup=reply.location_type_keyboard.as_markup(),
+        reply_markup=reply.get_location_type_keyboard(),
     )
     await state.update_data(action="current_weather")
     await state.set_state(SetLocation.set_location_type)
@@ -56,7 +56,7 @@ async def get_current_weather(message: types.Message, state: FSMContext):
 @dp.message(F.text == "Название города", StateFilter(SetLocation.set_location_type))
 async def choose_city_location_type(message: types.Message, state: FSMContext):
     await message.answer(
-        "Укажите название города с большой буквы:", reply_markup=reply.remove_keyboard
+        "Укажите название города с большой буквы:", reply_markup=reply.get_remove_keyboard()
     )
     await state.set_state(SetLocation.set_city)
 
@@ -87,21 +87,21 @@ async def click_city_button(message: types.Message, state: FSMContext):
             response = api_requests.get_current_weather(
                 latitude=latitude, longitude=longitude
             )
-            report = create_current_weather_report(response.json())
-            await message.answer(report, reply_markup=reply.remove_keyboard)
+            report = create_current_weather_report(message.text, response.json())
+            await message.answer(report, reply_markup=reply.get_remove_keyboard())
         elif action == "weather_forecast":
             response = api_requests.get_weather_forecast(
                 latitude=latitude, longitude=longitude
             )
-            report_list = create_weather_forecast(response.json())
+            report_list = create_weather_forecast(message.text, response.json())
             for report in report_list:
-                await message.answer(report, reply_markup=reply.remove_keyboard)
+                await message.answer(report, reply_markup=reply.get_remove_keyboard())
         elif action == "air_polution":
             response = api_requests.get_air_polution(
                 latitude=latitude, longitude=longitude
             )
-            report = create_air_polution_report(response.json())
-            await message.answer(report, reply_markup=reply.remove_keyboard)
+            report = create_air_polution_report(message.text, response.json())
+            await message.answer(report, reply_markup=reply.get_remove_keyboard())
     else:
         await message.answer("Данный город не был найден")
     await state.clear()
@@ -109,7 +109,7 @@ async def click_city_button(message: types.Message, state: FSMContext):
 
 @dp.message(F.text == "Широта и долгота", StateFilter(SetLocation.set_location_type))
 async def choose_coordinates_location_type(message: types.Message, state: FSMContext):
-    await message.answer("Укажите широту:", reply_markup=reply.remove_keyboard)
+    await message.answer("Укажите широту:", reply_markup=reply.get_remove_keyboard())
     await state.set_state(SetLocation.set_latitude)
 
 
@@ -132,18 +132,18 @@ async def set_longitude(message: types.Message, state: FSMContext):
             latitude=latitude, longitude=longitude
         )
         report = create_current_weather_report(response.json())
-        await message.answer(report, reply_markup=reply.remove_keyboard)
+        await message.answer(report, reply_markup=reply.get_remove_keyboard())
     elif action == "weather_forecast":
         response = api_requests.get_weather_forecast(
             latitude=latitude, longitude=longitude
         )
         report_list = create_weather_forecast(response.json())
         for report in report_list:
-            await message.answer(report, reply_markup=reply.remove_keyboard)
+            await message.answer(report, reply_markup=reply.get_remove_keyboard())
     elif action == "air_polution":
         response = api_requests.get_air_polution(latitude=latitude, longitude=longitude)
         report = create_air_polution_report(response.json())
-        await message.answer(report, reply_markup=reply.remove_keyboard)
+        await message.answer(report, reply_markup=reply.get_remove_keyboard())
     await state.clear()
 
 
@@ -151,7 +151,7 @@ async def set_longitude(message: types.Message, state: FSMContext):
 async def get_forecast_weather(message: types.Message, state: FSMContext):
     await message.answer(
         "Выберите способ указания геолокации:",
-        reply_markup=reply.location_type_keyboard.as_markup(),
+        reply_markup=reply.get_location_type_keyboard(),
     )
     await state.update_data(action="weather_forecast")
     await state.set_state(SetLocation.set_location_type)
@@ -161,7 +161,7 @@ async def get_forecast_weather(message: types.Message, state: FSMContext):
 async def get_air_polution(message: types.Message, state: FSMContext):
     await message.answer(
         "Выберите способ указания геолокации:",
-        reply_markup=reply.location_type_keyboard.as_markup()
+        reply_markup=reply.get_location_type_keyboard()
     )
     await state.update_data(action="air_polution")
     await state.set_state(SetLocation.set_location_type)
